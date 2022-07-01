@@ -62,7 +62,40 @@ def test_capture_charge_range():
     mock_output_func.assert_any_call(output_reading)
 
 
-if __name__ == '__main__':
-    test_split_continuous_range()
-    test_calculate_charge_readings()
-    test_capture_charge_range()
+def convert_input_to_binary_array(n: int):
+    return list(str("{0:0b}".format(n).zfill(12)))
+
+
+def test_high_fidelity_sensor():
+    current_in_bin = convert_input_to_binary_array(4)
+    current_in_amp = current_from_high_fidelity_sensor(current_in_bin)
+    assert(current_in_amp == 0)
+
+    current_in_bin = convert_input_to_binary_array(1146)
+    current_in_amp = current_from_high_fidelity_sensor(current_in_bin)
+    assert(current_in_amp == 3)
+
+    current_in_bin = convert_input_to_binary_array(4090)
+    current_in_amp = current_from_high_fidelity_sensor(current_in_bin)
+    assert(current_in_amp == 10)
+
+    current_in_bin = convert_input_to_binary_array(999999)
+    current_in_amp = current_from_high_fidelity_sensor(current_in_bin)
+    assert(current_in_amp == -1)
+
+
+# integration test
+def test_hifi_sensor_charge_range():
+    charge_values = [convert_input_to_binary_array(10), convert_input_to_binary_array(154),
+                     convert_input_to_binary_array(789), convert_input_to_binary_array(2222)]
+
+    output_reading = capture_hifi_sensor_charge_range(charge_values)
+    expected_reading = [ChargeRangeReadings(0, 0, 2), ChargeRangeReadings(2, 2, 1), ChargeRangeReadings(5, 5, 1)]
+    assert(output_reading == expected_reading)
+
+
+test_split_continuous_range()
+test_calculate_charge_readings()
+test_capture_charge_range()
+test_high_fidelity_sensor()
+test_hifi_sensor_charge_range()

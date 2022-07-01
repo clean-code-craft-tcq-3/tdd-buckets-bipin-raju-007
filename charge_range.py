@@ -38,12 +38,36 @@ def capture_charge_range(charge_values, record_output):
     split_continuous_range(charge_values, continuous_ranges)
     calculate_charge_readings(continuous_ranges, charge_readings)
     record_output(charge_readings)
+    return charge_readings
 
 
 def display_output(charge_readings):
     print("Range, Readings")
     for reading in charge_readings:
         print(reading)
+
+
+def current_from_high_fidelity_sensor(current_in_bit):
+    current_in_bit = ''.join(current_in_bit)
+    current_in_units = int(current_in_bit, 2)
+    if 0 < current_in_units < 4095:
+        current_in_amp = round(10 * current_in_units / 4094)
+        return current_in_amp
+    else:
+        return -1
+
+
+def capture_hifi_sensor_charge_range(charge_sequence):
+    """-
+    Takes input as sequence of charge values, where each value is represented in a 12-bit in array;
+    representing a reading between 0-4094 and returns their charge range.
+    """
+    charge_values = []
+    for value in charge_sequence:
+        charge_values.append(current_from_high_fidelity_sensor(value))
+
+    charge_readings = capture_charge_range(charge_values, display_output)
+    return charge_readings
 
 
 if __name__ == '__main__':
